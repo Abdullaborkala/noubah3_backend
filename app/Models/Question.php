@@ -5,7 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DailyQuiz extends Model
+class Question extends Model
 {
     use HasFactory;
+
+    //protected $hidden=['answer_option', 'created_at', 'updated_at'];
+    protected $guarded  = [];
 }

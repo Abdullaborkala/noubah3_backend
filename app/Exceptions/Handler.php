@@ -35,7 +35,7 @@ class Handler extends ExceptionHandler
     public function register()
     {
         $this->reportable(function (Throwable $e) {
-            //
+            return response(["status"=>'Failed','message'=>'Check req body'], 400);
         });
     }
 }

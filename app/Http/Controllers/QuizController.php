@@ -2,140 +2,95 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Quiz;
 use Illuminate\Http\Request;
+use App\Models\Quiz;
+use App\Models\UserAnswer;
+use Carbon\Carbon;
 
 class QuizController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $validateData = $request->validate([
-            'questioneng' => 'required',
-            'optionAeng' => 'required',
-            'optionBeng' => 'required',
-            'optionCeng' => 'required',
-            'optionDeng' => 'required',
-            'questionhindi' => 'required',
-            'optionAhindi' => 'required',
-            'optionBhindi' => 'required',
-            'optionChindi' => 'required',
-            'optionDhindi' => 'required',
-            'questionmal' => 'required',
-            'optionAmal' => 'required',
-            'optionBmal' => 'required',
-            'optionCmal' => 'required',
-            'optionDmal' => 'required',
-            'answer' => 'required',
+            'question_id' => 'required',
+            'from_time' => 'required',
+            'to_time' => 'required',
+        ]);
+        Quiz::create([
+            'question_id'=> $validateData['question_id'],
+            'from_time'=> $validateData['from_time'],
+            'to_time'=> $validateData['to_time']
         ]);
 
-        $quiz = Quiz::create([
-            'questioneng' => $validateData['questioneng'],
-            'optionAeng' => $validateData['optionAeng'],
-            'optionBeng' => $validateData['optionBeng'],
-            'optionCeng' => $validateData['optionCeng'],
-            'optionDeng' => $validateData['optionDeng'],
-            'questionhindi' => $validateData['questionhindi'],
-            'optionAhindi' => $validateData['optionAhindi'],
-            'optionBhindi' => $validateData['optionBhindi'],
-            'optionChindi' => $validateData['optionChindi'],
-            'optionDhindi' => $validateData['optionDhindi'],
-            'questionmal' => $validateData['questionmal'],
-            'optionAmal' => $validateData['optionAmal'],
-            'optionBmal' => $validateData['optionBmal'],
-            'optionCmal' => $validateData['optionCmal'],
-            'optionDmal' => $validateData['optionDmal'],
-            'answer' => $validateData['answer']
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Quiz created successfully!',
-        ]);
+        return response([
+            'status' => 'Success',
+            'message' => 'Data added'
+        ], 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Quiz  $quiz
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Quiz $quiz)
+    public function show()
     {
         $quiz = Quiz::all();
 
         return response([
-            'status' => 'success',
-            'quizes' => $quiz
-        ]);
+            $quiz
+        ],200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Quiz  $quiz
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Quiz $quiz, $id)
+    public function edit($id)
     {
-        $quiz = $quiz::where('quiz_id', $id)->get();
+        $quiz = Quiz::find($id);
+
+        return response([
+            $quiz
+        ],200);
+    }
+
+    public function update(Request $request, $id)
+    {
+        Quiz::where('id', $id)->update($request->all());
 
         return response([
             'status' => 'success',
-            'quiz' => $quiz
-        ]);
+            'message' => 'Data updated'
+        ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Quiz  $quiz
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id, Quiz $quiz)
+    public function destroy($id)
     {
-        $quiz::where('quiz_id', $id)->update($request->all());
+        Quiz::where('id', $id)->delete();
 
         return response([
             'status' => 'success',
-            'message' => 'updated successfully!'
-        ]);
+            'message' => 'Data deleted'
+        ], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Quiz  $quiz
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Quiz $quiz)
-    {
-        //
+    public function todays(){
+        $now = Carbon::now();
+        $dateTime = Carbon::parse($now)->toDateTimeString();
+        $quiz = Quiz::where('from_time', '<=',$dateTime)->where('to_time', '>', $dateTime)->with(['question'])->get();
+        
+        $quiz_ids=[];
+        foreach($quiz as $q){
+            $quiz_ids[] = $q->id;
+        }
+        $answered_quest = UserAnswer::whereIn('quiz_id', $quiz_ids)
+                                        ->where('user_id', auth('sanctum')->user()->id)->get()->toArray();
+        
+        foreach($quiz as $i => $q){
+            $ans_found = false;
+            foreach($answered_quest as $aq){
+                if($aq['quiz_id'] == $q->id){
+                    $quiz[$i]->HisAnswer = $aq['answer_key'];
+                    $ans_found = true;
+                }
+            }
+            if(!$ans_found){
+                $quiz[$i]->HisAnswer = "";
+            }
+            $q->question->makeHidden('answer_option');
+        }
+        return response(["data" => $quiz], 200);
     }
 }

@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\UserAnswerController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -24,17 +26,23 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/me', [AuthController::class, 'me']);
 
     //Quiz APIS
+    Route::prefix('question')->group(function(){
+        Route::post('/insert', [QuestionController::class, 'store']);
+        Route::get('/all', [QuestionController::class, 'show']);
+        Route::get('/edit/{id}', [QuestionController::class, 'edit']);
+        Route::patch('/update/{id}', [QuestionController::class, 'update']);
+    });
+
     Route::prefix('quiz')->group(function(){
         Route::post('/insert', [QuizController::class, 'store']);
         Route::get('/all', [QuizController::class, 'show']);
         Route::get('/edit/{id}', [QuizController::class, 'edit']);
         Route::patch('/update/{id}', [QuizController::class, 'update']);
+        Route::delete('/delete/{id}', [QuizController::class, 'destroy']);
+        Route::get('/todays', [QuizController::class, 'todays']);
     });
 
-    Route::prefix('daily-quiz')->group(function(){
-        Route::post('/insert', [QuizController::class, 'store']);
-        Route::get('/all', [QuizController::class, 'show']);
-        Route::get('/edit/{id}', [QuizController::class, 'edit']);
-        Route::patch('/update/{id}', [QuizController::class, 'update']);
+    Route::prefix('answer')->group(function(){
+        Route::post('/insert', [UserAnswerController::class, 'store']);
     });
 });
