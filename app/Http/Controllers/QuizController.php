@@ -23,27 +23,63 @@ class QuizController extends Controller
         ]);
 
         return response([
-            'status' => 'Success',
+            'success' => true,
             'message' => 'Data added'
         ], 200);
     }
 
-    public function show()
+    public function show(Request $request)
     {
-        $quiz = Quiz::all();
+        $params = $request->all();
+        $per_page = isset($params['per_page']) ? $params['per_page']: 10;
+        $searchKey = isset($params['searchKey']) ? $params['searchKey']: '';
 
+        $now = Carbon::now();
+        $dateTime = Carbon::parse($now)->toDateTimeString();
+
+        $quiz = Quiz::with(['question'])
+                    ->whereHas('question', function($query) use ($searchKey){
+                            $query->where('question_eng', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_eng_a', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_eng_b', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_eng_c', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_eng_d', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_eng_d', 'LIKE' , '%'.$searchKey.'%');
+                    })
+                    ->orwhere('from_time', 'LIKE' , '%'.$searchKey.'%')
+                    ->orWhere('to_time', 'LIKE' , '%'.$searchKey.'%')
+                    ->paginate($per_page)->toArray();
+
+        if(isset($params['currentQuiz'])){
+            $now = Carbon::now();
+            $dateTime = Carbon::parse($now)->toDateTimeString();
+            $quizToday = Quiz::where('from_time', '<=',$dateTime)->where('to_time', '>', $dateTime)->with(['question'])->pluck('id');
+            
+            $temp_quiz=[];
+            foreach($quiz['data'] as  $i => $q){
+                foreach($quizToday as $qT){
+                    if($q['id'] == $qT){
+                        $temp_quiz[] = $q;
+                    }
+                }
+            }
+            $quiz = $temp_quiz;
+        }else{
+            $quiz = $quiz['data'];
+        }
         return response([
-            $quiz
+            'success' => true,
+            'data' => $quiz
         ],200);
     }
 
     public function edit($id)
     {
-        $quiz = Quiz::find($id);
-
-        return response([
-            $quiz
-        ],200);
+        $quiz = Quiz::with(['question'])->find($id);
+        if(!$quiz){
+            return response(["message" => 'No data found!']);
+        }
+        return response($quiz);
     }
 
     public function update(Request $request, $id)

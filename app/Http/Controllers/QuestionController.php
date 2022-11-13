@@ -68,18 +68,51 @@ class QuestionController extends Controller
         ]);
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Quiz created successfully!',
         ]);
     }
 
-    public function show()
+    public function show(Request $request)
     {
-        $question = Question::all();
+        $params = $request->all();
+        $per_page = isset($params['per_page']) ? $params['per_page']: 10;
+        $searchKey = isset($params['searchKey']) ? $params['searchKey']: '';
+        if(isset($params['searchKey']) && isset($params['searchKey']) != ''){
+            $question = Question::where('question_eng', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('question_eng', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('question_hindi', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('question_mal', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('question_kan', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_eng_a', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_hindi_a', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_mal_a', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_kan_a', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_eng_b', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_hindi_b', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_mal_b', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_kan_b', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_eng_c', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_hindi_c', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_mal_c', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_kan_c', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_eng_d', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_hindi_d', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_mal_d', 'LIKE' , '%'.$searchKey.'%')
+                                    ->orWhere('ans_kan_d', 'LIKE' , '%'.$searchKey.'%')
+                                    ->paginate($per_page)->toArray();
+        }else{
+            $question = Question::paginate($per_page)->toArray();
+        }
+        
         if(!$question){
             return response(["message" => 'No data found!']);
         }
-        return response($question);
+
+        return response([
+            'success' => true,
+            'data' => $question['data']
+        ],200);
     }
 
     public function edit($id)
@@ -108,6 +141,11 @@ class QuestionController extends Controller
 
     public function destroy($id)
     {
-        //
+        Question::where('id', $id)->delete();
+
+        return response([
+            "status" => "Success", 
+            "message" => "Data deleted"
+        ], 200);
     }
 }

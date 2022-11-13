@@ -31,6 +31,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/all', [QuestionController::class, 'show']);
         Route::get('/edit/{id}', [QuestionController::class, 'edit']);
         Route::patch('/update/{id}', [QuestionController::class, 'update']);
+        Route::delete('/delete/{id}', [QuestionController::class, 'destroy']);
     });
 
     Route::prefix('quiz')->group(function(){
