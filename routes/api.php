@@ -23,7 +23,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-    Route::post('/me', [AuthController::class, 'me']);
+    Route::get('/me', [AuthController::class, 'me']);
 
     //Quiz APIS
     Route::prefix('question')->group(function(){
@@ -45,5 +45,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::prefix('answer')->group(function(){
         Route::post('/insert', [UserAnswerController::class, 'store']);
+        Route::get('/my-answeres', [UserAnswerController::class, 'allAnsweres']);
+
     });
 });

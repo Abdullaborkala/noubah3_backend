@@ -60,6 +60,27 @@ class UserAnswerController extends Controller
         ],200);
     }
 
+    public function allAnsweres(Request $request){
+        //Current questions
+        $now = Carbon::now();
+        $dateTime = Carbon::parse($now)->toDateTimeString();
+        $UserAnswer = UserAnswer::where('user_id', auth('sanctum')->user()->id)->with('quiz', function($query) use ($dateTime) {
+            $query->where('to_time', '<', $dateTime)->with(['question'])->get();
+        })->get()->toArray();
+
+        $result = [];
+        foreach($UserAnswer as $ua){
+            if($ua['quiz'] != NULL){
+                $result[] = $ua;
+            }
+        }
+        
+        return response([
+            'status'=> 'Success',
+            'data'=> $result 
+        ],200);
+    }
+
     public function show(UserAnswer $userAnswer)
     {
         //

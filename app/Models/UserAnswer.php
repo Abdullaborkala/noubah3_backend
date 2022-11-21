@@ -11,4 +11,8 @@ class UserAnswer extends Model
 
     protected $table = 'useranswer';
     protected $guarded = [];
+
+    public function quiz(){
+        return $this->belongsTo(Quiz::class);
+    }
 }
