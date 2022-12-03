@@ -68,7 +68,7 @@ class PostController extends Controller
 
         $res = [];
         foreach($post['data'] as $arr){
-            $arr['image'] = storage_path('/public/storage/app').'/'.$arr['image'];
+            $arr['image'] = asset('/public/storage/app').'/'.$arr['image'];
             $res[] = $arr;
         }
 
