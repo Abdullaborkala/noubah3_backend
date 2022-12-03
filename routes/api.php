@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\UserAnswerController;
+use App\Http\Controllers\PostController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -37,7 +38,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::prefix('quiz')->group(function(){
         Route::post('/insert', [QuizController::class, 'store']);
         Route::get('/all', [QuizController::class, 'show']);
-        Route::get('/edit/{id}', [QuizController::class, 'edit']);
         Route::patch('/update/{id}', [QuizController::class, 'update']);
         Route::delete('/delete/{id}', [QuizController::class, 'destroy']);
         Route::get('/todays', [QuizController::class, 'todays']);
@@ -46,6 +46,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::prefix('answer')->group(function(){
         Route::post('/insert', [UserAnswerController::class, 'store']);
         Route::get('/my-answeres', [UserAnswerController::class, 'allAnsweres']);
+    });
 
+    Route::prefix('post')->group(function(){
+        Route::post('/insert', [PostController::class, 'store']);
+        Route::get('/all', [PostController::class, 'show']);
+        Route::get('/edit/{id}', [PostController::class, 'edit']);
+        Route::patch('/update/{id}', [PostController::class, 'update']);
+        Route::delete('/delete/{id}', [PostController::class, 'destroy']);
     });
 });
